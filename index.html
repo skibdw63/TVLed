@@ -1099,4 +1099,730 @@
           <div class="schedule-item" onclick="document.getElementById('series').scrollIntoView({behavior:'smooth'})">
             <div class="schedule-time">BLOQUE 3 • ESTELAR</div>
             <div class="schedule-title">La Familia De Alan</div>
-            <div class="schedule-desc">Explora los
+            <div class="schedule-desc">Explora los episodios abajo (también en StreamKids).</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Catálogo de Series (Estilo Netflix) -->
+    <section id="series">
+      <h2 class="section-title">Series Originales TVLed</h2>
+      <div class="netflix-grid" id="seriesGrid">
+        <!-- Se llena automáticamente desde Firestore + ejemplo inicial -->
+      </div>
+    </section>
+
+    <!-- Catálogo de Programas -->
+    <section id="programas">
+      <h2 class="section-title">Programas y Especiales</h2>
+      <div class="netflix-grid" id="programsGrid">
+        <!-- Se llena automáticamente desde Firestore -->
+      </div>
+    </section>
+
+    <!-- Noticias Diarias -->
+    <section id="noticias">
+      <h2 class="section-title">Noticias Diarias TVLed</h2>
+      <div class="cards-grid" id="newsGrid">
+        <!-- Se llena automáticamente desde Firestore -->
+      </div>
+    </section>
+
+    <!-- Blog y Avisos -->
+    <section id="comunidad">
+      <h2 class="section-title">Blog y Avisos del Canal</h2>
+      <div class="posts-grid" id="postsContainer">
+        <article class="post-card">
+          <span class="post-cat">Canal</span>
+          <h4>¡Bienvenidos a la nueva señal digital de TVLed!</h4>
+          <p>Disfruta nuestras series con episodios completos, programas periódicos y noticias diarias.</p>
+          <span class="post-date">TVLed Broadcasting Station</span>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL ESTILO NETFLIX PARA SERIES Y PROGRAMAS -->
+  <div class="modal-backdrop" id="detailModal" onclick="if(event.target === this) closeModal()">
+    <div class="modal-card">
+      <div class="modal-hero" id="modalHero">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <img id="modalPosterImg" class="modal-poster-mini" src="" alt="Retrato" style="display:none;" />
+        <div class="modal-hero-content">
+          <img id="modalLogoImg" src="" alt="Logo" style="max-height:68px; max-width:260px; margin-bottom:10px; display:none;" />
+          <h2 id="modalTitle" style="font-size:26px; font-weight:900; margin-bottom:6px;">Título</h2>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;" id="modalBadges"></div>
+          <p id="modalDesc" style="font-size:13px; color:#cbd5e1;">Descripción</p>
+        </div>
+      </div>
+      <div class="modal-episodes" id="modalEpisodesList"></div>
+    </div>
+  </div>
+
+  <footer>
+    TVLed Broadcasting Station • Señal Familiar HD • Contenido disponible también en StreamKids
+  </footer>
+
+  <!-- FIREBASE SDK (Autenticación + Cloud Firestore) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgfnrMIwUF_tVlA-q-cGa8e_lGVWwskls",
+      authDomain: "tvled-afda1.firebaseapp.com",
+      projectId: "tvled-afda1",
+      messagingSenderId: "871473790651",
+      appId: "1:871473790651:web:044f16edfbb21661ad739e"
+    };
+
+    const ADMIN_EMAIL = "skibidiw63@gmail.com";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let isAdminUser = false;
+    let allSeries = [];
+    let allPrograms = [];
+
+    // Fecha de hoy por defecto en Noticias
+    document.getElementById("newsDate").valueAsDate = new Date();
+
+    // Auth UI
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const adminPanel = document.getElementById("adminPanel");
+
+    loginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        alert("Error al iniciar sesión: " + err.message);
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+        isAdminUser = !!(user.email && user.email.toLowerCase() === ADMIN_EMAIL);
+        adminPanel.style.display = isAdminUser ? "block" : "none";
+      } else {
+        loginBtn.style.display = "inline-block";
+        logoutBtn.style.display = "none";
+        isAdminUser = false;
+        adminPanel.style.display = "none";
+      }
+      renderSeriesCatalog();
+      renderProgramsCatalog();
+    });
+
+    function verifyAdmin() {
+      if (!auth.currentUser || auth.currentUser.email.toLowerCase() !== ADMIN_EMAIL) {
+        alert("Solo skibidiw63@gmail.com puede hacer cambios en TVLed.");
+        return false;
+      }
+      return true;
+    }
+
+    // 1. CREAR SERIE (NETFLIX MODE)
+    window.createSeries = async () => {
+      if (!verifyAdmin()) return;
+      const title = document.getElementById("seriesTitle").value.trim();
+      const logoUrl = document.getElementById("seriesLogo").value.trim();
+      const posterUrl = document.getElementById("seriesPoster").value.trim();
+      const rating = document.getElementById("seriesRating").value;
+      const ratingDetails = document.getElementById("seriesRatingDetails").value.trim();
+      const description = document.getElementById("seriesDesc").value.trim();
+
+      if (!title) return alert("Ponle un título a la serie.");
+
+      await addDoc(collection(db, "tvled_series"), {
+        title,
+        logoUrl,
+        posterUrl,
+        rating,
+        ratingDetails: ratingDetails || "Contenido familiar",
+        description,
+        episodes: [],
+        createdAt: serverTimestamp()
+      });
+
+      document.getElementById("seriesTitle").value = "";
+      document.getElementById("seriesLogo").value = "";
+      document.getElementById("seriesPoster").value = "";
+      document.getElementById("seriesRatingDetails").value = "";
+      document.getElementById("seriesDesc").value = "";
+      alert("¡Serie creada! Ahora puedes agregarle sus episodios.");
+    };
+
+    // AGREGAR EPISODIO A SERIE
+    window.addEpisodeToSeries = async () => {
+      if (!verifyAdmin()) return;
+      const seriesId = document.getElementById("epSeriesSelect").value;
+      const number = document.getElementById("epNumber").value.trim() || "T1:E1";
+      const title = document.getElementById("epTitle").value.trim();
+      const rating = document.getElementById("epRating").value;
+      const ratingDetails = document.getElementById("epRatingDetails").value.trim();
+      const desc = document.getElementById("epDesc").value.trim();
+      const mp4Url = document.getElementById("epMp4Url").value.trim();
+
+      if (!seriesId || !title || !mp4Url) {
+        return alert("Elige una serie, escribe el título del episodio y pon la ruta/URL del MP4.");
+      }
+
+      await updateDoc(doc(db, "tvled_series", seriesId), {
+        episodes: arrayUnion({
+          id: Date.now().toString(),
+          number,
+          title,
+          rating,
+          ratingDetails,
+          desc,
+          mp4Url
+        })
+      });
+
+      document.getElementById("epTitle").value = "";
+      document.getElementById("epDesc").value = "";
+      document.getElementById("epMp4Url").value = "";
+      alert("¡Episodio agregado a la serie!");
+    };
+
+    // ESCUCHAR SERIES EN TIEMPO REAL
+    onSnapshot(query(collection(db, "tvled_series"), orderBy("createdAt", "desc")), (snap) => {
+      allSeries = [];
+      const select = document.getElementById("epSeriesSelect");
+      select.innerHTML = '<option value="">-- Selecciona una serie --</option>';
+
+      snap.forEach((d) => {
+        const item = { id: d.id, ...d.data() };
+        allSeries.push(item);
+        const opt = document.createElement("option");
+        opt.value = d.id;
+        opt.textContent = item.title;
+        select.appendChild(opt);
+      });
+      renderSeriesCatalog();
+    });
+
+    function renderSeriesCatalog() {
+      const grid = document.getElementById("seriesGrid");
+      grid.innerHTML = "";
+
+      // Tarjeta base de La Familia De Alan si aún no la creas en Firestore
+      const listToShow = allSeries.length > 0 ? allSeries : [{
+        id: "demo_lfda",
+        title: "La Familia De Alan",
+        logoUrl: "",
+        posterUrl: "",
+        rating: "TV-G",
+        ratingDetails: "Comedia familiar • Música por MagneticHoneybee43",
+        description: "Alan, Isela, Tía Gloria, Güelita Juana, Tía Yeny y Nayla viven aventuras cotidianas llenas de risa y sorpresas.",
+        episodes: [
+          {
+            number: "T1:E1",
+            title: "Almuerzo con Familia",
+            rating: "TV-G",
+            ratingDetails: "Comedia familiar",
+            desc: "Alan se despierta tarde para ir a comer a casa de su Tía Gloria y termina perdido.",
+            mp4Url: ""
+          }
+        ]
+      }];
+
+      listToShow.forEach((serie) => {
+        const card = document.createElement("article");
+        card.className = "poster-card";
+        const bgStyle = serie.posterUrl ? `background-image: url('${serie.posterUrl}');` : "";
+        const logoHtml = serie.logoUrl
+          ? `<img src="${serie.logoUrl}" class="poster-logo-img" alt="${serie.title}">`
+          : `<div class="poster-title-fallback">${serie.title}</div>`;
+
+        card.innerHTML = `
+          <div class="poster-art" style="${bgStyle}">
+            <div class="poster-top">
+              <span class="tag">${serie.rating || "TV-G"}</span>
+              <span class="tag tag-sk">STREAMKIDS</span>
+            </div>
+            <div class="poster-bottom">
+              ${logoHtml}
+            </div>
+          </div>
+          <div class="poster-info">
+            <p>${serie.ratingDetails || ""}</p>
+            <p>${serie.description || ""}</p>
+            <div class="card-meta">
+              <span>${(serie.episodes || []).length} Episodio(s) ▶</span>
+              ${isAdminUser && serie.id !== "demo_lfda" ? `<button class="btn btn-danger" onclick="event.stopPropagation(); deleteDocItem('tvled_series', '${serie.id}')">Borrar</button>` : ""}
+            </div>
+          </div>
+        `;
+        card.onclick = () => openSeriesModal(serie);
+        grid.appendChild(card);
+      });
+    }
+
+    // 2. CREAR PROGRAMAS (EPISODIOS O PERIÓDICO: DÍA / SEMANA / MES / AÑO)
+    window.createProgram = async () => {
+      if (!verifyAdmin()) return;
+      const title = document.getElementById("progTitle").value.trim();
+      const logoUrl = document.getElementById("progLogo").value.trim();
+      const posterUrl = document.getElementById("progPoster").value.trim();
+      const mode = document.getElementById("progMode").value;
+      const frequency = document.getElementById("progFrequency").value;
+      const singleMp4 = document.getElementById("progSingleMp4").value.trim();
+      const description = document.getElementById("progDesc").value.trim();
+
+      if (!title) return alert("Ponle un nombre al programa.");
+
+      await addDoc(collection(db, "tvled_programs"), {
+        title,
+        logoUrl,
+        posterUrl,
+        mode, // "episodios" o "periodico"
+        frequency: mode === "periodico" ? frequency : "Por Episodios",
+        singleMp4,
+        description,
+        episodes: [],
+        createdAt: serverTimestamp()
+      });
+
+      document.getElementById("progTitle").value = "";
+      document.getElementById("progLogo").value = "";
+      document.getElementById("progPoster").value = "";
+      document.getElementById("progSingleMp4").value = "";
+      document.getElementById("progDesc").value = "";
+      alert("¡Programa guardado en TVLed!");
+    };
+
+    window.addContentToProgram = async () => {
+      if (!verifyAdmin()) return;
+      const progId = document.getElementById("progTargetSelect").value;
+      const title = document.getElementById("progEpTitle").value.trim();
+      const desc = document.getElementById("progEpDesc").value.trim();
+      const mp4Url = document.getElementById("progEpMp4").value.trim();
+
+      if (!progId || !mp4Url) return alert("Selecciona el programa y pon el MP4.");
+
+      const prog = allPrograms.find(p => p.id === progId);
+      if (prog && prog.mode === "periodico") {
+        await updateDoc(doc(db, "tvled_programs", progId), {
+          singleMp4: mp4Url,
+          description: desc || prog.description
+        });
+        alert("¡MP4 periódico actualizado!");
+      } else {
+        await updateDoc(doc(db, "tvled_programs", progId), {
+          episodes: arrayUnion({
+            id: Date.now().toString(),
+            number: `Cap. ${(prog?.episodes?.length || 0) + 1}`,
+            title: title || "Capítulo",
+            rating: "TV-G",
+            ratingDetails: "Programa TVLed",
+            desc,
+            mp4Url
+          })
+        });
+        alert("¡Capítulo agregado al programa!");
+      }
+
+      document.getElementById("progEpTitle").value = "";
+      document.getElementById("progEpDesc").value = "";
+      document.getElementById("progEpMp4").value = "";
+    };
+
+    onSnapshot(query(collection(db, "tvled_programs"), orderBy("createdAt", "desc")), (snap) => {
+      allPrograms = [];
+      const select = document.getElementById("progTargetSelect");
+      select.innerHTML = '<option value="">-- Selecciona un programa --</option>';
+
+      snap.forEach((d) => {
+        const item = { id: d.id, ...d.data() };
+        allPrograms.push(item);
+        const opt = document.createElement("option");
+        opt.value = d.id;
+        opt.textContent = `${item.title} (${item.frequency})`;
+        select.appendChild(opt);
+      });
+      renderProgramsCatalog();
+    });
+
+    function renderProgramsCatalog() {
+      const grid = document.getElementById("programsGrid");
+      grid.innerHTML = "";
+      if (allPrograms.length === 0) {
+        grid.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">Aún no hay programas extra publicados. Agrégalos desde el panel de TVLed Studio.</p>';
+        return;
+      }
+
+      allPrograms.forEach((prog) => {
+        const card = document.createElement("article");
+        card.className = "poster-card";
+        const bgStyle = prog.posterUrl ? `background-image: url('${prog.posterUrl}');` : "";
+        const logoHtml = prog.logoUrl
+          ? `<img src="${prog.logoUrl}" class="poster-logo-img" alt="${prog.title}">`
+          : `<div class="poster-title-fallback">${prog.title}</div>`;
+
+        card.innerHTML = `
+          <div class="poster-art" style="${bgStyle}">
+            <div class="poster-top">
+              <span class="tag tag-freq">${prog.frequency.toUpperCase()}</span>
+            </div>
+            <div class="poster-bottom">
+              ${logoHtml}
+            </div>
+          </div>
+          <div class="poster-info">
+            <p>${prog.description || ""}</p>
+            <div class="card-meta">
+              <span>${prog.mode === "periodico" ? "Ver Emisión Actual ▶" : `${(prog.episodes || []).length} Capítulos ▶`}</span>
+              ${isAdminUser ? `<button class="btn btn-danger" onclick="event.stopPropagation(); deleteDocItem('tvled_programs', '${prog.id}')">Borrar</button>` : ""}
+            </div>
+          </div>
+        `;
+
+        card.onclick = () => {
+          if (prog.mode === "periodico") {
+            playVideoSource(prog.singleMp4, `${prog.title} (${prog.frequency})`, prog.description, "TV-G", prog.frequency, false);
+          } else {
+            openSeriesModal({
+              title: prog.title,
+              logoUrl: prog.logoUrl,
+              posterUrl: prog.posterUrl,
+              rating: "TV-G",
+              ratingDetails: prog.frequency,
+              description: prog.description,
+              episodes: prog.episodes || []
+            });
+          }
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    // 3. NOTICIAS DIARIAS MP4
+    window.publishDailyNews = async () => {
+      if (!verifyAdmin()) return;
+      const dateStr = document.getElementById("newsDate").value;
+      const title = document.getElementById("newsTitle").value.trim();
+      const summary = document.getElementById("newsSummary").value.trim();
+      const mp4Url = document.getElementById("newsMp4Url").value.trim();
+
+      if (!title || !mp4Url) return alert("Escribe el titular y pon el MP4 de las noticias.");
+
+      await addDoc(collection(db, "tvled_daily_news"), {
+        dateStr: dateStr || new Date().toISOString().split("T")[0],
+        title,
+        summary,
+        mp4Url,
+        createdAt: serverTimestamp()
+      });
+
+      document.getElementById("newsTitle").value = "";
+      document.getElementById("newsSummary").value = "";
+      document.getElementById("newsMp4Url").value = "";
+      alert("¡Noticiero diario publicado!");
+    };
+
+    onSnapshot(query(collection(db, "tvled_daily_news"), orderBy("dateStr", "desc")), (snap) => {
+      const grid = document.getElementById("newsGrid");
+      grid.innerHTML = "";
+
+      if (snap.empty) {
+        grid.innerHTML = `
+          <article class="show-card" onclick="playVideoSource('', 'Noticias TVLed — Edición Central', 'Noticiero diario grabado y editado en DaVinci Resolve', 'TV-G', 'Informativo', false)">
+            <div class="thumb-news">
+              <div><span class="tag">NOTICIAS • HOY</span></div>
+              <div class="thumb-title">Noticias TVLed</div>
+            </div>
+            <div class="card-body">
+              <div>
+                <h4>Noticiero Diario</h4>
+                <p>Las noticias del día de nuestra estación en casa.</p>
+              </div>
+              <div class="card-meta"><span>Ver Noticiero ▶</span><span>TV-G</span></div>
+            </div>
+          </article>
+        `;
+        return;
+      }
+
+      snap.forEach((d, idx) => {
+        const news = d.data();
+        const card = document.createElement("article");
+        card.className = "show-card";
+        card.innerHTML = `
+          <div class="thumb-news">
+            <div style="display:flex; justify-content:space-between;">
+              <span class="tag">${idx === 0 ? "EDICIÓN DE HOY" : news.dateStr}</span>
+              <span class="tag">TV-G</span>
+            </div>
+            <div class="thumb-title">${news.title}</div>
+          </div>
+          <div class="card-body">
+            <div>
+              <h4>Fecha: ${news.dateStr}</h4>
+              <p>${news.summary || "Resumen informativo del día en TVLed."}</p>
+            </div>
+            <div class="card-meta">
+              <span>Reproducir MP4 ▶</span>
+              ${isAdminUser ? `<button class="btn btn-danger" onclick="event.stopPropagation(); deleteDocItem('tvled_daily_news', '${d.id}')">Borrar</button>` : ""}
+            </div>
+          </div>
+        `;
+        card.onclick = () => playVideoSource(news.mp4Url, `${news.title} (${news.dateStr})`, news.summary, "TV-G", "Noticiero Diario", false);
+        grid.appendChild(card);
+      });
+    });
+
+    // 4. SEÑAL EN VIVO Y BLOG
+    onSnapshot(doc(db, "tvled_config", "live_status"), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+      document.getElementById("currentTitle").textContent = data.title || "Señal En Vivo — TVLed";
+      document.getElementById("currentSubtitle").textContent = data.subtitle || "Programación Familiar TVLed";
+      const badge = document.getElementById("liveBadge");
+      const badgeText = document.getElementById("liveBadgeText");
+
+      if (data.isPremiere) {
+        badge.style.background = "#f59e0b";
+        badge.style.color = "#080b12";
+        badgeText.textContent = "PREMIERE EN VIVO • LFDA";
+      } else {
+        badge.style.background = "#ef4444";
+        badge.style.color = "#ffffff";
+        badgeText.textContent = "EN VIVO • TVLED";
+      }
+    });
+
+    window.publishLiveStatus = async (isPremiere) => {
+      if (!verifyAdmin()) return;
+      const title = isPremiere
+        ? document.getElementById("adminLiveTitle").value
+        : "Señal En Vivo — Bloque Familiar TVLed";
+      const subtitle = isPremiere
+        ? document.getElementById("adminLiveSub").value
+        : "Noticias TVLed • Cortes Comerciales • La Familia De Alan";
+
+      await setDoc(doc(db, "tvled_config", "live_status"), {
+        isPremiere,
+        title,
+        subtitle,
+        updatedAt: serverTimestamp()
+      });
+      alert(isPremiere ? "¡Premiere activada!" : "Señal normal restaurada.");
+    };
+
+    const postsQuery = query(collection(db, "tvled_posts"), orderBy("createdAt", "desc"));
+    onSnapshot(postsQuery, (snapshot) => {
+      const container = document.getElementById("postsContainer");
+      if (snapshot.empty) return;
+      container.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const post = docSnap.data();
+        const card = document.createElement("article");
+        card.className = "post-card";
+        card.innerHTML = `
+          <span class="post-cat">${post.category || "Canal"}</span>
+          <h4>${post.title}</h4>
+          <p>${post.body}</p>
+          <span class="post-date">Publicado por TVLed Oficial</span>
+        `;
+        container.appendChild(card);
+      });
+    });
+
+    window.createTvLedPost = async () => {
+      if (!verifyAdmin()) return;
+      const category = document.getElementById("adminPostCategory").value;
+      const title = document.getElementById("adminPostTitle").value.trim();
+      const body = document.getElementById("adminPostBody").value.trim();
+      if (!title || !body) return alert("Completa el título y el contenido.");
+
+      await addDoc(collection(db, "tvled_posts"), {
+        category,
+        title,
+        body,
+        author: auth.currentUser.email,
+        createdAt: serverTimestamp()
+      });
+
+      document.getElementById("adminPostTitle").value = "";
+      document.getElementById("adminPostBody").value = "";
+      alert("¡Post publicado!");
+    };
+
+    window.deleteDocItem = async (colName, docId) => {
+      if (!verifyAdmin()) return;
+      if (confirm("¿Seguro que quieres eliminar esto?")) {
+        await deleteDoc(doc(db, colName, docId));
+      }
+    };
+  </script>
+
+  <!-- Lógica de interfaz, modal Netflix y reproductor MP4 -->
+  <script>
+    function updateHeaderClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      document.getElementById('headerClock').textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
+    }
+    setInterval(updateHeaderClock, 1000);
+    updateHeaderClock();
+
+    function switchAdminTab(tabId, btnEl) {
+      document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
+      btnEl.classList.add("active");
+      document.getElementById(tabId).classList.add("active");
+    }
+
+    function toggleProgramModeFields() {
+      const mode = document.getElementById("progMode").value;
+      document.getElementById("progPeriodicFields").style.display = mode === "periodico" ? "flex" : "none";
+    }
+
+    function openSeriesModal(serie) {
+      const modal = document.getElementById("detailModal");
+      const hero = document.getElementById("modalHero");
+      const posterImg = document.getElementById("modalPosterImg");
+      const logoImg = document.getElementById("modalLogoImg");
+      const titleEl = document.getElementById("modalTitle");
+      const badgesEl = document.getElementById("modalBadges");
+      const descEl = document.getElementById("modalDesc");
+      const epList = document.getElementById("modalEpisodesList");
+
+      hero.style.backgroundImage = serie.posterUrl ? `url('${serie.posterUrl}')` : "linear-gradient(135deg, #1e3a8a, #0f172a)";
+
+      if (serie.posterUrl) {
+        posterImg.src = serie.posterUrl;
+        posterImg.style.display = "block";
+      } else {
+        posterImg.style.display = "none";
+      }
+
+      if (serie.logoUrl) {
+        logoImg.src = serie.logoUrl;
+        logoImg.style.display = "block";
+        titleEl.style.display = "none";
+      } else {
+        logoImg.style.display = "none";
+        titleEl.style.display = "block";
+        titleEl.textContent = serie.title;
+      }
+
+      badgesEl.innerHTML = `
+        <span class="tag">${serie.rating || "TV-G"}</span>
+        <span class="tag tag-freq">${serie.ratingDetails || "Contenido Familiar"}</span>
+        <span class="tag tag-sk">STREAMKIDS</span>
+      `;
+      descEl.textContent = serie.description || "";
+
+      epList.innerHTML = `<h3 style="font-size:16px; color:var(--accent); margin-bottom:4px;">Episodios Disponibles</h3>`;
+      const episodes = serie.episodes || [];
+
+      if (episodes.length === 0) {
+        epList.innerHTML += `<p style="font-size:13px; color:var(--text-muted);">Aún no se han agregado episodios MP4 a esta serie.</p>`;
+      } else {
+        episodes.forEach((ep) => {
+          const row = document.createElement("div");
+          row.className = "episode-row";
+          row.innerHTML = `
+            <div class="ep-num">${ep.number || "EP"}</div>
+            <div class="ep-details">
+              <h4>${ep.title} <span class="tag" style="margin-left:6px;">${ep.rating || serie.rating || "TV-G"}</span></h4>
+              <p>${ep.ratingDetails ? `<strong>[${ep.ratingDetails}]</strong> ` : ""}${ep.desc || ""}</p>
+            </div>
+            <button class="btn">▶ Ver</button>
+          `;
+          row.onclick = () => {
+            closeModal();
+            playVideoSource(
+              ep.mp4Url,
+              `${serie.title} — ${ep.number}: ${ep.title}`,
+              ep.desc || serie.description,
+              ep.rating || serie.rating || "TV-G",
+              ep.ratingDetails || serie.ratingDetails || "Público General",
+              false
+            );
+          };
+          epList.appendChild(row);
+        });
+      }
+
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("detailModal").style.display = "none";
+    }
+
+    function playVideoSource(mp4Url, title, subtitle, rating, ratingDetails, isLive) {
+      const videoEl = document.getElementById("tvPlayer");
+      const placeholder = document.getElementById("stagePlaceholder");
+
+      document.getElementById("currentTitle").textContent = title;
+      document.getElementById("currentSubtitle").textContent = subtitle || "TVLed Broadcasting Station";
+      document.getElementById("ratingCode").textContent = rating || "TV-G";
+      document.getElementById("ratingDesc").textContent = ratingDetails || "Público General";
+
+      const badge = document.getElementById("liveBadge");
+      const badgeText = document.getElementById("liveBadgeText");
+      if (isLive) {
+        badge.style.background = "#ef4444";
+        badge.style.color = "#fff";
+        badgeText.textContent = "EN VIVO • TVLED";
+      } else {
+        badge.style.background = "#0072ff";
+        badge.style.color = "#fff";
+        badgeText.textContent = "ON DEMAND • TVLED";
+      }
+
+      if (mp4Url) {
+        videoEl.src = mp4Url;
+        videoEl.style.display = "block";
+        placeholder.style.display = "none";
+        videoEl.play().catch(() => {});
+      } else {
+        videoEl.pause();
+        videoEl.style.display = "none";
+        placeholder.style.display = "block";
+        document.getElementById("placeholderDesc").textContent = "Este episodio aún no tiene archivo MP4 vinculado. Agrégalo desde TVLed Studio.";
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function loadAdminLocalMp4() {
+      const file = document.getElementById("adminMp4Input").files[0];
+      if (!file) return alert("Selecciona un MP4 de tu computadora.");
+      const url = URL.createObjectURL(file);
+      playVideoSource(url, `Vista Previa: ${file.name}`, "Reproducción local desde PC • TVLed Studio", "TV-G", "Vista Previa", false);
+    }
+
+    function switchToLive() {
+      playVideoSource(
+        "",
+        "Señal En Vivo — Bloque Familiar TVLed",
+        "Noticias TVLed • Cortes Comerciales • La Familia De Alan",
+        "TV-G",
+        "Público General",
+        true
+      );
+    }
+  </script>
+</body>
+</html>
