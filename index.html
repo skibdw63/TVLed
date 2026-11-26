@@ -129,7 +129,7 @@
       background: rgba(255, 255, 255, 0.16);
     }
 
-    /* StreamKids Cross-Promo Banner */
+    /* StreamKids Banner */
     .streamkids-banner {
       background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(0, 210, 255, 0.14));
       border-bottom: 1px solid rgba(16, 185, 129, 0.35);
@@ -177,32 +177,57 @@
       flex-wrap: wrap;
       gap: 10px;
       padding-bottom: 14px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       border-bottom: 1px solid var(--border);
     }
 
     .admin-header h2 {
       font-size: 20px;
       color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
-    .admin-grid {
+    .admin-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .admin-tab {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .admin-tab.active {
+      background: var(--accent);
+      color: #080b12;
+      border-color: var(--accent);
+    }
+
+    .admin-tab-content {
+      display: none;
+    }
+
+    .admin-tab-content.active {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 18px;
     }
 
     .admin-box {
-      background: rgba(8, 11, 18, 0.75);
+      background: rgba(8, 11, 18, 0.8);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
     }
 
     .admin-box h3 {
@@ -228,8 +253,13 @@
     }
 
     .admin-textarea {
-      min-height: 75px;
+      min-height: 70px;
       resize: vertical;
+    }
+
+    .helper-hint {
+      font-size: 11px;
+      color: #64748b;
     }
 
     /* Live Broadcast Hero Section */
@@ -270,7 +300,8 @@
     video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #000;
       display: none;
     }
 
@@ -321,18 +352,29 @@
       50% { opacity: 0.35; transform: scale(0.85); }
     }
 
-    .rating-badge {
+    .rating-overlay {
       position: absolute;
       top: 16px;
       right: 16px;
-      background: rgba(15, 23, 42, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 4px;
+      background: rgba(8, 11, 18, 0.88);
+      border-left: 4px solid var(--accent);
+      padding: 6px 12px;
+      border-radius: 6px;
       z-index: 10;
+      text-align: right;
+    }
+
+    .rating-code {
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+      display: block;
+    }
+
+    .rating-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
     }
 
     .player-bar {
@@ -380,6 +422,14 @@
     .btn-secondary {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--border);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      padding: 5px 10px;
+      font-size: 11px;
     }
 
     /* Schedule Sidebar */
@@ -454,9 +504,129 @@
       border-radius: 4px;
     }
 
+    /* Netflix-style Portrait Cards Grid */
+    .netflix-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 42px;
+    }
+
+    .poster-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .poster-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      border-color: var(--accent);
+      box-shadow: 0 14px 30px rgba(0, 210, 255, 0.18);
+    }
+
+    .poster-art {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      background: linear-gradient(160deg, #1e3a8a, #0f172a);
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px;
+    }
+
+    .poster-art::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(8, 11, 18, 0.96) 5%, rgba(8, 11, 18, 0.15) 55%, rgba(8, 11, 18, 0.45) 100%);
+      pointer-events: none;
+    }
+
+    .poster-top, .poster-bottom {
+      position: relative;
+      z-index: 2;
+    }
+
+    .poster-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .poster-logo-img {
+      max-width: 85%;
+      max-height: 62px;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.85));
+    }
+
+    .poster-title-fallback {
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+    }
+
+    .poster-info {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .poster-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .tag {
+      background: rgba(0, 0, 0, 0.72);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+
+    .tag-sk {
+      background: var(--streamkids-green);
+      color: #042f2e;
+      border: none;
+    }
+
+    .tag-freq {
+      background: rgba(0, 210, 255, 0.2);
+      color: var(--accent);
+      border: 1px solid rgba(0, 210, 255, 0.4);
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* Noticias Diarias Grid */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
       margin-bottom: 42px;
     }
@@ -478,42 +648,17 @@
       border-color: rgba(0, 210, 255, 0.35);
     }
 
-    .thumb {
-      height: 150px;
+    .thumb-news {
+      height: 145px;
       padding: 15px;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
-    .thumb-alan { background: linear-gradient(135deg, #1e3a8a, #0284c7); }
-    .thumb-news { background: linear-gradient(135deg, #0f172a, #1d4ed8); }
-    .thumb-ads { background: linear-gradient(135deg, #312e81, #7c3aed); }
-    .thumb-next { background: linear-gradient(135deg, #78350f, #d97706); }
-
-    .tag-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      background: rgba(0, 0, 0, 0.58);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 5px;
-    }
-
-    .tag-sk {
-      background: var(--streamkids-green);
-      color: #042f2e;
-    }
-
     .thumb-title {
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 900;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     }
@@ -537,15 +682,133 @@
       margin-bottom: 12px;
     }
 
-    .card-meta {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: var(--accent);
-      font-weight: 700;
+    /* Netflix Series Detail Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 6, 12, 0.86);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
     }
 
-    /* Posts / Noticias / Blog Feed */
+    .modal-card {
+      background: #0f172a;
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      border-radius: 18px;
+      max-width: 820px;
+      width: 100%;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-hero {
+      position: relative;
+      padding: 28px;
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      gap: 22px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .modal-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, #0f172a 8%, rgba(15, 23, 42, 0.65) 100%);
+    }
+
+    .modal-hero-content {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .modal-poster-mini {
+      position: relative;
+      z-index: 2;
+      width: 120px;
+      aspect-ratio: 2 / 3;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: #1e293b;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 5;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .modal-episodes {
+      padding: 22px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .episode-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .episode-row:hover {
+      background: rgba(0, 210, 255, 0.1);
+      border-color: var(--accent);
+    }
+
+    .ep-num {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent);
+      min-width: 34px;
+    }
+
+    .ep-details {
+      flex: 1;
+    }
+
+    .ep-details h4 {
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
+
+    .ep-details p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Posts / Blog Feed */
     .posts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -607,9 +870,10 @@
     </div>
     <nav>
       <a class="active" onclick="switchToLive()">En Vivo</a>
-      <a href="#series">Series y Programas</a>
-      <a href="#proximos">Próximos Episodios</a>
-      <a href="#comunidad">Noticias y Blog</a>
+      <a href="#series">Series (Netflix Mode)</a>
+      <a href="#programas">Programas</a>
+      <a href="#noticias">Noticias Diarias</a>
+      <a href="#comunidad">Blog</a>
     </nav>
     <div class="header-actions">
       <div class="clock-pill" id="headerClock">12:00:00 PM</div>
@@ -628,62 +892,159 @@
     <!-- PANEL DE ADMINISTRADOR (SOLO VISIBLE PARA skibidiw63@gmail.com) -->
     <section id="adminPanel">
       <div class="admin-header">
-        <h2>Panel de Control TVLed (Admin: skibidiw63)</h2>
-        <span style="font-size:12px; color:var(--text-muted);">Conectado a Cloud Firestore</span>
+        <h2>TVLed Studio • Panel de Control (skibidiw63@gmail.com)</h2>
+        <span style="font-size:12px; color:var(--accent); font-weight:700;">Conectado a Cloud Firestore</span>
       </div>
 
-      <div class="admin-grid">
-        <!-- 1. Stream En Vivo / Premiere LFDA -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('tabSeries', this)">1. Series (Estilo Netflix)</button>
+        <button class="admin-tab" onclick="switchAdminTab('tabProgramas', this)">2. Programas (Episodios o Periódico)</button>
+        <button class="admin-tab" onclick="switchAdminTab('tabNoticias', this)">3. Noticias Diarias (MP4)</button>
+        <button class="admin-tab" onclick="switchAdminTab('tabEnVivo', this)">4. Señal En Vivo / Blog</button>
+      </div>
+
+      <!-- TAB 1: SERIES ESTILO NETFLIX -->
+      <div id="tabSeries" class="admin-tab-content active">
         <div class="admin-box">
-          <h3>1. Emitir En Vivo / Premiere LFDA</h3>
-          <label>Título de la emisión o Premiere</label>
+          <h3>Crear Nueva Serie</h3>
+          <label>Título de la Serie</label>
+          <input type="text" id="seriesTitle" class="admin-input" placeholder="Ej. La Familia De Alan" />
+          <label>Logo de la Serie (URL o ruta ej. img/lfda-logo.png)</label>
+          <input type="text" id="seriesLogo" class="admin-input" placeholder="img/lfda-logo.png" />
+          <label>Retrato / Portada Vertical (URL o ruta ej. img/lfda-poster.jpg)</label>
+          <input type="text" id="seriesPoster" class="admin-input" placeholder="img/lfda-poster.jpg" />
+          <label>Clasificación Base</label>
+          <select id="seriesRating" class="admin-select">
+            <option value="TV-G">TV-G (Público General)</option>
+            <option value="TV-PG">TV-PG (Supervisión Parental)</option>
+            <option value="TV-14">TV-14 (Episodios Intensos)</option>
+          </select>
+          <label>¿Qué tiene la clasificación? (Descriptores)</label>
+          <input type="text" id="seriesRatingDetails" class="admin-input" placeholder="Ej. Comedia familiar, aventuras, escenas intensas en final" />
+          <label>Sinopsis de la Serie</label>
+          <textarea id="seriesDesc" class="admin-textarea" placeholder="De qué trata la serie..."></textarea>
+          <button class="btn" onclick="createSeries()">Guardar Serie en TVLed</button>
+        </div>
+
+        <div class="admin-box">
+          <h3>Agregar / Customizar Episodio de Serie</h3>
+          <label>Selecciona la Serie</label>
+          <select id="epSeriesSelect" class="admin-select">
+            <option value="">-- Crea o elige una serie --</option>
+          </select>
+          <label>Número de Temporada y Episodio</label>
+          <input type="text" id="epNumber" class="admin-input" placeholder="Ej. T1:E1" />
+          <label>Título del Episodio</label>
+          <input type="text" id="epTitle" class="admin-input" placeholder="Ej. Almuerzo con Familia" />
+          <label>Clasificación específica de este Episodio</label>
+          <select id="epRating" class="admin-select">
+            <option value="TV-G">TV-G</option>
+            <option value="TV-PG">TV-PG</option>
+            <option value="TV-14">TV-14 (Intenso)</option>
+          </select>
+          <label>¿Qué tiene este episodio? (Opcional)</label>
+          <input type="text" id="epRatingDetails" class="admin-input" placeholder="Ej. Comedia familiar / Acción y un poco de sangre" />
+          <label>Descripción / Créditos del Episodio</label>
+          <input type="text" id="epDesc" class="admin-input" placeholder="Música por MagneticHoneybee43..." />
+          <label>Archivo MP4 (ruta en tu web ej. videos/lfda-ep1.mp4 o URL)</label>
+          <input type="text" id="epMp4Url" class="admin-input" placeholder="videos/lfda-ep1.mp4" />
+          <button class="btn btn-premiere" onclick="addEpisodeToSeries()">Publicar Episodio</button>
+        </div>
+      </div>
+
+      <!-- TAB 2: PROGRAMAS -->
+      <div id="tabProgramas" class="admin-tab-content">
+        <div class="admin-box">
+          <h3>Crear Programa de TV</h3>
+          <label>Nombre del Programa</label>
+          <input type="text" id="progTitle" class="admin-input" placeholder="Ej. Especiales TVLed / Show Semanal" />
+          <label>Logo del Programa (URL o ruta)</label>
+          <input type="text" id="progLogo" class="admin-input" placeholder="img/programa-logo.png" />
+          <label>Retrato / Portada (URL o ruta)</label>
+          <input type="text" id="progPoster" class="admin-input" placeholder="img/programa-poster.jpg" />
+          <label>Formato de Emisión</label>
+          <select id="progMode" class="admin-select" onchange="toggleProgramModeFields()">
+            <option value="episodios">Con Capítulos o Episodios</option>
+            <option value="periodico">Un solo MP4 periódico (Día / Semana / Mes / Año)</option>
+          </select>
+
+          <div id="progPeriodicFields" style="display:none; flex-direction:column; gap:8px;">
+            <label>Frecuencia de actualización</label>
+            <select id="progFrequency" class="admin-select">
+              <option value="Cada Día">Cada Día (Diario)</option>
+              <option value="Cada Semana">Cada Semana (Semanal)</option>
+              <option value="Cada Mes">Cada Mes (Mensual)</option>
+              <option value="Cada Año">Cada Año (Anual)</option>
+            </select>
+            <label>Ruta o URL del MP4 actual</label>
+            <input type="text" id="progSingleMp4" class="admin-input" placeholder="videos/programa-semana.mp4" />
+          </div>
+
+          <label>Descripción del Programa</label>
+          <textarea id="progDesc" class="admin-textarea" placeholder="Descripción del programa..."></textarea>
+          <button class="btn" onclick="createProgram()">Guardar Programa</button>
+        </div>
+
+        <div class="admin-box">
+          <h3>Agregar Capítulo o Actualizar MP4 Periódico</h3>
+          <label>Selecciona el Programa</label>
+          <select id="progTargetSelect" class="admin-select">
+            <option value="">-- Elige un programa --</option>
+          </select>
+          <label>Título del Capítulo / Edición</label>
+          <input type="text" id="progEpTitle" class="admin-input" placeholder="Ej. Capítulo 1 o Edición de esta semana" />
+          <label>Descripción</label>
+          <input type="text" id="progEpDesc" class="admin-input" placeholder="Resumen del capítulo..." />
+          <label>Archivo MP4 (ruta o URL)</label>
+          <input type="text" id="progEpMp4" class="admin-input" placeholder="videos/programa-cap1.mp4" />
+          <button class="btn btn-premiere" onclick="addContentToProgram()">Guardar MP4 en Programa</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: NOTICIAS DIARIAS MP4 -->
+      <div id="tabNoticias" class="admin-tab-content">
+        <div class="admin-box">
+          <h3>Publicar Noticias MP4 de Cada Día</h3>
+          <label>Fecha de la Edición</label>
+          <input type="date" id="newsDate" class="admin-input" />
+          <label>Titular Principal del Día</label>
+          <input type="text" id="newsTitle" class="admin-input" placeholder="Ej. Noticias TVLed — Edición Especial de Hoy" />
+          <label>Resumen de Noticias</label>
+          <textarea id="newsSummary" class="admin-textarea" placeholder="Temas de hoy en el noticiero..."></textarea>
+          <label>Archivo MP4 del Noticiero (ruta o URL)</label>
+          <input type="text" id="newsMp4Url" class="admin-input" placeholder="videos/noticias-hoy.mp4" />
+          <button class="btn" onclick="publishDailyNews()">Publicar Noticiero del Día</button>
+        </div>
+      </div>
+
+      <!-- TAB 4: SEÑAL EN VIVO Y BLOG -->
+      <div id="tabEnVivo" class="admin-tab-content">
+        <div class="admin-box">
+          <h3>Control de Señal En Vivo / Premiere</h3>
+          <label>Título en pantalla</label>
           <input type="text" id="adminLiveTitle" class="admin-input" value="PREMIERE EN VIVO: La Familia De Alan - Ep 1" />
-          <label>Descripción en pantalla</label>
-          <input type="text" id="adminLiveSub" class="admin-input" value="Estreno especial en vivo por TVLed • Clasificación TV-G" />
-          <button class="btn btn-premiere" onclick="publishLiveStatus(true)">Activar Premiere LFDA En Vivo</button>
-          <button class="btn btn-secondary" onclick="publishLiveStatus(false)">Volver a Señal Normal TVLed</button>
-        </div>
-
-        <!-- 2. Cargar MP4 de Programa o Canal En Vivo -->
-        <div class="admin-box">
-          <h3>2. Cargar Archivo MP4 (Canal o Programa)</h3>
-          <label>Tipo de emisión</label>
-          <select id="adminVideoMode" class="admin-select">
-            <option value="canal">Canal En Vivo (Bloque Completo)</option>
-            <option value="programa">Programa / Episodio (LFDA / Noticias)</option>
-          </select>
-          <label>Seleccionar MP4 desde WORK (D:)</label>
+          <label>Subtítulo</label>
+          <input type="text" id="adminLiveSub" class="admin-input" value="Estreno especial por TVLed • TV-G" />
+          <label>Probar MP4 local rápido desde tu PC (D: / V:)</label>
           <input type="file" id="adminMp4Input" accept="video/mp4,video/*" class="admin-input" />
-          <button class="btn" onclick="loadAdminMp4()">Reproducir MP4 en Pantalla</button>
+          <button class="btn btn-secondary" onclick="loadAdminLocalMp4()">Reproducir MP4 Local</button>
+          <button class="btn btn-premiere" onclick="publishLiveStatus(true)">Activar Banner Premiere En Vivo</button>
+          <button class="btn btn-secondary" onclick="publishLiveStatus(false)">Volver a Señal Normal</button>
         </div>
 
-        <!-- 3. Siguiente Episodio o Temporada -->
         <div class="admin-box">
-          <h3>3. Siguiente Episodio o Temporada</h3>
-          <label>Temporada / Etiqueta</label>
-          <input type="text" id="adminNextSeason" class="admin-input" placeholder="Ej. Temporada 1 • Episodio 2" />
-          <label>Título del próximo episodio</label>
-          <input type="text" id="adminNextTitle" class="admin-input" placeholder="Ej. El Gato Nuevo de Alan" />
-          <label>Sinopsis / Fecha de estreno</label>
-          <input type="text" id="adminNextDesc" class="admin-input" placeholder="Próximamente por TVLed y StreamKids" />
-          <button class="btn" onclick="saveNextEpisode()">Actualizar Próximo Episodio</button>
-        </div>
-
-        <!-- 4. Publicar Post (Noticias, Canal, Programa o Blog) -->
-        <div class="admin-box">
-          <h3>4. Publicar Post en TVLed</h3>
-          <label>Categoría del Post</label>
+          <h3>Publicar Aviso o Entrada de Blog</h3>
+          <label>Categoría</label>
           <select id="adminPostCategory" class="admin-select">
-            <option value="Noticias">Noticias</option>
             <option value="Canal">Canal TVLed</option>
-            <option value="Programa">Programa / Serie</option>
             <option value="Blog">Blog del Estudio</option>
+            <option value="Avance">Avance de Temporada</option>
           </select>
-          <label>Título del Post</label>
-          <input type="text" id="adminPostTitle" class="admin-input" placeholder="Escribe un título..." />
+          <label>Título</label>
+          <input type="text" id="adminPostTitle" class="admin-input" placeholder="Título del aviso..." />
           <label>Contenido</label>
-          <textarea id="adminPostBody" class="admin-textarea" placeholder="Escribe la noticia, aviso o entrada de blog..."></textarea>
-          <button class="btn" onclick="createTvLedPost()">Publicar Post</button>
+          <textarea id="adminPostBody" class="admin-textarea" placeholder="Escribe tu mensaje..."></textarea>
+          <button class="btn" onclick="createTvLedPost()">Publicar en Blog</button>
         </div>
       </div>
     </section>
@@ -696,13 +1057,16 @@
             <span class="dot"></span>
             <span id="liveBadgeText">EN VIVO • TVLED</span>
           </div>
-          <div class="rating-badge" id="ratingBadge">TV-G</div>
+          <div class="rating-overlay" id="ratingOverlay">
+            <span class="rating-code" id="ratingCode">TV-G</span>
+            <span class="rating-desc" id="ratingDesc">Público General</span>
+          </div>
 
-          <video id="tvPlayer" controls autoplay playsinline></video>
+          <video id="tvPlayer" controls playsinline></video>
 
           <div class="stage-placeholder" id="stagePlaceholder">
             <h2>Señal Principal TVLed</h2>
-            <p id="placeholderDesc">Sintonizando programación familiar en alta definición. Si eres el operador de estación, carga el MP4 exportado desde DaVinci Resolve.</p>
+            <p id="placeholderDesc">Selecciona una serie, programa o noticiero de abajo para reproducirlo en pantalla completa.</p>
           </div>
         </div>
 
@@ -722,363 +1086,17 @@
           <span style="font-size: 12px; color: var(--accent); font-weight: 700;">CANAL 1</span>
         </div>
         <div class="schedule-list">
-          <div class="schedule-item current" onclick="selectProgram('Noticias TVLed — Edición Principal', 'Resumen informativo y reportajes • TV-G', 'TV-G', true)">
+          <div class="schedule-item current" onclick="playVideoSource('', 'Noticias TVLed — Edición Principal', 'Resumen informativo del día', 'TV-G', 'Informativo familiar', true)">
             <div class="schedule-time">BLOQUE 1 • EN VIVO</div>
             <div class="schedule-title">Noticias TVLed</div>
-            <div class="schedule-desc">Las noticias del día con cortes informativos.</div>
+            <div class="schedule-desc">Las noticias de cada día en TVLed.</div>
           </div>
-          <div class="schedule-item" onclick="selectProgram('Corte Comercial TVLed', 'Anuncios oficiales y avances de programación • TV-G', 'TV-G', true)">
+          <div class="schedule-item" onclick="playVideoSource('', 'Corte Comercial TVLed', 'Anuncios oficiales y avances', 'TV-G', 'Público General', true)">
             <div class="schedule-time">BLOQUE 2 • COMERCIALES</div>
             <div class="schedule-title">Anuncios TVLed</div>
             <div class="schedule-desc">Tanda comercial entre programas.</div>
           </div>
-          <div class="schedule-item" onclick="selectProgram('La Familia De Alan — Ep 1: Almuerzo con Familia', 'Alan se despierta tarde para comer con su familia y se pierde camino a casa • TV-G', 'TV-G', false)">
-            <div class="schedule-time">BLOQUE 3 • ESTRENO</div>
-            <div class="schedule-title">La Familia De Alan (Ep. 1)</div>
-            <div class="schedule-desc">Disponible también en StreamKids.</div>
-          </div>
-        </div>
-      </aside>
-    </section>
-
-    <!-- Catálogo On-Demand -->
-    <section id="series">
-      <h2 class="section-title">Series y Programas</h2>
-      <div class="cards-grid">
-        <article class="show-card" onclick="selectProgram('La Familia De Alan — Ep 1: Almuerzo con Familia', 'Con Alan, Isela, Tía Gloria, Güelita Juana, Tía Yeny, Nayla y Ángel el panadero • TV-G', 'TV-G', false)">
-          <div class="thumb thumb-alan">
-            <div class="tag-row">
-              <span class="tag">SERIE • TV-G</span>
-              <span class="tag tag-sk">EN STREAMKIDS</span>
-            </div>
-            <div class="thumb-title">La Familia De Alan</div>
-          </div>
-          <div class="card-body">
-            <div>
-              <h4>Ep. 1: Almuerzo con Familia</h4>
-              <p>Alan despierta a las 12:00 PM para ir a casa de Tía Gloria y termina perdido buscando la calle Febrero Soleado.</p>
-            </div>
-            <div class="card-meta">
-              <span>Ver Episodio ▶</span>
-              <span>Temporada 1</span>
-            </div>
-          </div>
-        </article>
-
-        <article class="show-card" onclick="selectProgram('Noticias TVLed — Noticiero Central', 'Edición completa grabada y editada en DaVinci Resolve • TV-G', 'TV-G', false)">
-          <div class="thumb thumb-news">
-            <div class="tag-row">
-              <span class="tag">NOTICIERO • TV-G</span>
-            </div>
-            <div class="thumb-title">Noticias TVLed</div>
-          </div>
-          <div class="card-body">
-            <div>
-              <h4>Noticiero Central</h4>
-              <p>Las noticias del día con el estilo moderno y limpio de nuestra estación en casa.</p>
-            </div>
-            <div class="card-meta">
-              <span>Reproducir ▶</span>
-              <span>Edición Hoy</span>
-            </div>
-          </div>
-        </article>
-
-        <article class="show-card" onclick="selectProgram('Tanda Comercial TVLed', 'Compilación de anuncios y cortinillas del canal • TV-G', 'TV-G', false)">
-          <div class="thumb thumb-ads">
-            <div class="tag-row">
-              <span class="tag">ANUNCIOS • TV-G</span>
-            </div>
-            <div class="thumb-title">Anuncios TVLed</div>
-          </div>
-          <div class="card-body">
-            <div>
-              <h4>Bloque Comercial</h4>
-              <p>Los anuncios oficiales y promos de nuestros programas familiares.</p>
-            </div>
-            <div class="card-meta">
-              <span>Reproducir ▶</span>
-              <span>Especial</span>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Próximos Episodios / Temporadas -->
-    <section id="proximos">
-      <h2 class="section-title">Próximos Episodios y Temporadas</h2>
-      <div class="cards-grid">
-        <article class="show-card">
-          <div class="thumb thumb-next">
-            <div class="tag-row">
-              <span class="tag" id="nextEpSeasonTag">TEMPORADA 1 • EPISODIO 2</span>
-              <span class="tag tag-sk">PRÓXIMAMENTE</span>
-            </div>
-            <div class="thumb-title" id="nextEpCardTitle">La Familia De Alan — Ep. 2</div>
-          </div>
-          <div class="card-body">
-            <div>
-              <h4 id="nextEpHeading">¡El Gato Nuevo de Alan!</h4>
-              <p id="nextEpDesc">Después de la promesa de Tía Yeny en el almuerzo familiar, Alan se prepara para recibir una sorpresa muy peluda en casa.</p>
-            </div>
-            <div class="card-meta">
-              <span>Estreno en TVLed y StreamKids</span>
-              <span>TV-G</span>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Noticias, Canal, Programas y Blog (Posts desde Firestore) -->
-    <section id="comunidad">
-      <h2 class="section-title">Noticias, Canal, Programas y Blog</h2>
-      <div class="posts-grid" id="postsContainer">
-        <article class="post-card">
-          <span class="post-cat">Canal</span>
-          <h4>¡Bienvenidos a la nueva señal digital de TVLed!</h4>
-          <p>Ya puedes disfrutar de nuestra programación familiar, las noticias del día y el estreno de La Familia De Alan (TV-G), disponible también en StreamKids.</p>
-          <span class="post-date">Publicado por TVLed Oficial</span>
-        </article>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    TVLed Broadcasting Station • Señal Familiar HD (TV-G) • Contenido disponible también en StreamKids
-  </footer>
-
-  <!-- FIREBASE SDK (Autenticación + Cloud Firestore) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-    // =========================================================================
-    // PEGA AQUÍ LA CONFIGURACIÓN DE TU PROYECTO FIREBASE (Firebase Console)
-    // =========================================================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyBgfnrMIwUF_tVlA-q-cGa8e_lGVWwskls",
-      authDomain: "tvled-afda1.firebaseapp.com",
-      projectId: "tvled-afda1",
-      messagingSenderId: "871473790651",
-      appId: "1:871473790651:web:044f16edfbb21661ad739e"
-    };
-
-    const ADMIN_EMAIL = "skibidiw63@gmail.com";
-
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const adminPanel = document.getElementById("adminPanel");
-
-    // Sign In con Google
-    loginBtn.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        alert("Error al iniciar sesión: " + err.message);
-      }
-    });
-
-    // Log Out
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-    });
-
-    // Detectar usuario y mostrar Admin Panel SOLO si es skibidiw63@gmail.com
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        if (user.email && user.email.toLowerCase() === ADMIN_EMAIL) {
-          adminPanel.style.display = "block";
-        } else {
-          adminPanel.style.display = "none";
-        }
-      } else {
-        loginBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
-        adminPanel.style.display = "none";
-      }
-    });
-
-    // Escuchar estado en vivo / Premiere desde Firestore en tiempo real
-    onSnapshot(doc(db, "tvled_config", "live_status"), (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-      document.getElementById("currentTitle").textContent = data.title || "Señal En Vivo — TVLed";
-      document.getElementById("currentSubtitle").textContent = data.subtitle || "Programación Familiar TVLed";
-      const badge = document.getElementById("liveBadge");
-      const badgeText = document.getElementById("liveBadgeText");
-
-      if (data.isPremiere) {
-        badge.style.background = "#f59e0b";
-        badge.style.color = "#080b12";
-        badgeText.textContent = "PREMIERE EN VIVO • LFDA";
-      } else {
-        badge.style.background = "#ef4444";
-        badge.style.color = "#ffffff";
-        badgeText.textContent = "EN VIVO • TVLED";
-      }
-    });
-
-    // Escuchar Próximo Episodio / Temporada desde Firestore
-    onSnapshot(doc(db, "tvled_config", "next_episode"), (snap) => {
-      if (!snap.exists()) return;
-      const data = snap.data();
-      if (data.seasonTag) document.getElementById("nextEpSeasonTag").textContent = data.seasonTag.toUpperCase();
-      if (data.title) {
-        document.getElementById("nextEpCardTitle").textContent = data.title;
-        document.getElementById("nextEpHeading").textContent = data.title;
-      }
-      if (data.desc) document.getElementById("nextEpDesc").textContent = data.desc;
-    });
-
-    // Escuchar Posts (Noticias, Canal, Programa, Blog) desde Firestore
-    const postsQuery = query(collection(db, "tvled_posts"), orderBy("createdAt", "desc"));
-    onSnapshot(postsQuery, (snapshot) => {
-      const container = document.getElementById("postsContainer");
-      if (snapshot.empty) return;
-      container.innerHTML = "";
-      snapshot.forEach((docSnap) => {
-        const post = docSnap.data();
-        const card = document.createElement("article");
-        card.className = "post-card";
-        card.innerHTML = `
-          <span class="post-cat">${post.category || "Noticias"}</span>
-          <h4>${post.title}</h4>
-          <p>${post.body}</p>
-          <span class="post-date">Publicado por TVLed Oficial</span>
-        `;
-        container.appendChild(card);
-      });
-    });
-
-    // Funciones del Admin Panel expuestas a window
-    window.publishLiveStatus = async (isPremiere) => {
-      if (!auth.currentUser || auth.currentUser.email.toLowerCase() !== ADMIN_EMAIL) return;
-      const title = isPremiere
-        ? document.getElementById("adminLiveTitle").value
-        : "Señal En Vivo — Bloque Familiar TVLed";
-      const subtitle = isPremiere
-        ? document.getElementById("adminLiveSub").value
-        : "Noticias TVLed • Cortes Comerciales • La Familia De Alan";
-
-      await setDoc(doc(db, "tvled_config", "live_status"), {
-        isPremiere,
-        title,
-        subtitle,
-        updatedAt: serverTimestamp()
-      });
-      alert(isPremiere ? "¡Premiere de LFDA activada en vivo!" : "Señal normal restaurada.");
-    };
-
-    window.saveNextEpisode = async () => {
-      if (!auth.currentUser || auth.currentUser.email.toLowerCase() !== ADMIN_EMAIL) return;
-      const seasonTag = document.getElementById("adminNextSeason").value;
-      const title = document.getElementById("adminNextTitle").value;
-      const desc = document.getElementById("adminNextDesc").value;
-
-      await setDoc(doc(db, "tvled_config", "next_episode"), {
-        seasonTag,
-        title,
-        desc,
-        updatedAt: serverTimestamp()
-      });
-      alert("¡Próximo episodio / temporada actualizado!");
-    };
-
-    window.createTvLedPost = async () => {
-      if (!auth.currentUser || auth.currentUser.email.toLowerCase() !== ADMIN_EMAIL) return;
-      const category = document.getElementById("adminPostCategory").value;
-      const title = document.getElementById("adminPostTitle").value.trim();
-      const body = document.getElementById("adminPostBody").value.trim();
-      if (!title || !body) return alert("Completa el título y el contenido del post.");
-
-      await addDoc(collection(db, "tvled_posts"), {
-        category,
-        title,
-        body,
-        author: auth.currentUser.email,
-        createdAt: serverTimestamp()
-      });
-
-      document.getElementById("adminPostTitle").value = "";
-      document.getElementById("adminPostBody").value = "";
-      alert("¡Post publicado en TVLed!");
-    };
-  </script>
-
-  <!-- Lógica local de reloj y reproductor MP4 -->
-  <script>
-    function updateHeaderClock() {
-      const now = new Date();
-      let hours = now.getHours();
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      document.getElementById('headerClock').textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
-    }
-    setInterval(updateHeaderClock, 1000);
-    updateHeaderClock();
-
-    function loadAdminMp4() {
-      const input = document.getElementById("adminMp4Input");
-      const mode = document.getElementById("adminVideoMode").value;
-      const file = input.files[0];
-      if (!file) return alert("Primero selecciona un archivo MP4 de tu computadora.");
-
-      const videoEl = document.getElementById("tvPlayer");
-      const placeholder = document.getElementById("stagePlaceholder");
-      videoEl.src = URL.createObjectURL(file);
-      videoEl.style.display = "block";
-      placeholder.style.display = "none";
-      videoEl.play();
-
-      const isLive = mode === "canal";
-      selectProgram(
-        isLive ? `Señal En Vivo: ${file.name}` : `Programa: ${file.name}`,
-        isLive ? "Transmisión del canal TVLed • TV-G" : "Reproducción de programa en TVLed • TV-G",
-        "TV-G",
-        isLive
-      );
-    }
-
-    function selectProgram(title, subtitle, rating, isLive) {
-      document.getElementById("currentTitle").textContent = title;
-      document.getElementById("currentSubtitle").textContent = subtitle;
-      document.getElementById("ratingBadge").textContent = rating;
-
-      const badge = document.getElementById("liveBadge");
-      const badgeText = document.getElementById("liveBadgeText");
-      if (isLive) {
-        badge.style.background = "#ef4444";
-        badge.style.color = "#fff";
-        badgeText.textContent = "EN VIVO • TVLED";
-      } else {
-        badge.style.background = "#0072ff";
-        badge.style.color = "#fff";
-        badgeText.textContent = "ON DEMAND • TVLED";
-      }
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function switchToLive() {
-      selectProgram(
-        "Señal En Vivo — Bloque Familiar TVLed",
-        "Noticias TVLed • Cortes Comerciales • La Familia De Alan",
-        "TV-G",
-        true
-      );
-    }
-  </script>
-</body>
-</html>
+          <div class="schedule-item" onclick="document.getElementById('series').scrollIntoView({behavior:'smooth'})">
+            <div class="schedule-time">BLOQUE 3 • ESTELAR</div>
+            <div class="schedule-title">La Familia De Alan</div>
+            <div class="schedule-desc">Explora los
